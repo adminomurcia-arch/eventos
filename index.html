@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Eventos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #eef2f7;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px 48px;
+  }
+ 
+  .card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 28px rgba(0,0,0,.10);
+    width: 100%;
+    max-width: 560px;
+    overflow: hidden;
+  }
+ 
+  .header {
+    background: linear-gradient(135deg, #4A90D9 0%, #357ABD 100%);
+    padding: 30px 32px 24px;
+    color: #fff;
+  }
+  .header h1 { font-size: 1.45rem; font-weight: 700; }
+  .header p  { font-size: .85rem; opacity: .85; margin-top: 5px; }
+ 
+  .form-body {
+    padding: 28px 32px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+ 
+  .section-title {
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #4A90D9;
+    border-bottom: 1.5px solid #e8f0fb;
+    padding-bottom: 6px;
+    margin-bottom: -4px;
+  }
+ 
+  .field { display: flex; flex-direction: column; gap: 6px; }
+ 
+  label {
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    color: #555;
+    text-transform: uppercase;
+  }
+  label .req { color: #e53935; margin-left: 2px; }
+ 
+  input[type="text"],
+  input[type="number"],
+  input[type="datetime-local"],
+  select,
+  textarea {
+    padding: 11px 14px;
+    border: 1.5px solid #dde1e7;
+    border-radius: 10px;
+    font-size: .97rem;
+    color: #222;
+    font-family: inherit;
+    transition: border .2s, box-shadow .2s;
+    background: #fafafa;
+    width: 100%;
+    appearance: auto;
+    -webkit-appearance: auto;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #4A90D9;
+    box-shadow: 0 0 0 3px rgba(74,144,217,.15);
+    background: #fff;
+  }
+  input[readonly] {
+    background: #f0f6ff;
+    color: #2563a8;
+    font-weight: 600;
+    cursor: default;
+  }
+  textarea { resize: vertical; min-height: 85px; line-height: 1.5; }
+ 
+  .hint { font-size: .78rem; color: #999; margin-top: 2px; min-height: 16px; }
+  .hint.ok   { color: #1a7f45; }
+  .hint.err  { color: #e53935; }
+  .hint.info { color: #1565c0; }
+ 
+  /* Campo tacógrafo oculto por defecto */
+  .campo-tacografo { display: none; }
+ 
+  /* Upload */
+  .upload-area {
+    border: 2px dashed #c5d5e8;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    background: #f7faff;
+    position: relative;
+    transition: all .2s;
+  }
+  .upload-area:hover, .upload-area.active { border-color: #4A90D9; background: #eef4ff; }
+  .upload-area input[type="file"] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+    border: none; padding: 0; background: transparent;
+  }
+  .upload-icon { font-size: 2rem; margin-bottom: 6px; }
+  .upload-text { font-size: .88rem; color: #666; }
+  .upload-text strong { color: #4A90D9; }
+  .upload-preview {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #eef4ff;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-size: .85rem;
+    color: #2563a8;
+  }
+  .upload-preview.show { display: flex; }
+  .remove-file { margin-left: auto; cursor: pointer; color: #e53935; font-weight: 700; }
+  .size-warn { font-size: .75rem; color: #e53935; margin-top: 4px; display: none; }
+  .size-warn.show { display: block; }
+ 
+  /* Progreso */
+  .progress-wrap { display: none; flex-direction: column; gap: 6px; }
+  .progress-wrap.show { display: flex; }
+  .progress-bg { background: #e8f0fb; border-radius: 99px; height: 8px; overflow: hidden; }
+  .progress-bar { background: linear-gradient(90deg,#4A90D9,#7bbcf7); height: 100%; border-radius: 99px; width: 0%; transition: width .4s; }
+  .progress-label { font-size: .8rem; color: #4A90D9; font-weight: 600; }
+ 
+  /* Error de sistema */
+  .sys-error { background: #fff3f3; border: 1.5px solid #e53935; border-radius: 10px; padding: 12px 16px; font-size: .85rem; color: #c62828; display: none; }
+  .sys-error.show { display: block; }
+ 
+  /* Botón */
+  .btn-submit {
+    background: linear-gradient(135deg, #4A90D9 0%, #357ABD 100%);
+    color: #fff; border: none; border-radius: 10px;
+    padding: 15px; font-size: 1rem; font-weight: 700;
+    cursor: pointer; width: 100%; margin-top: 4px;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn-submit:hover    { opacity: .92; }
+  .btn-submit:active   { transform: scale(.98); }
+  .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+ 
+  /* Toast */
+  .toast {
+    display: none; position: fixed;
+    bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: #222; color: #fff;
+    padding: 12px 24px; border-radius: 24px;
+    font-size: .9rem; box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    z-index: 999; max-width: 92vw; text-align: center; line-height: 1.4;
+  }
+  .toast.show    { display: block; animation: fadeUp .3s; }
+  .toast.success { background: #1a7f45; }
+  .toast.error   { background: #c62828; }
+ 
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateX(-50%) translateY(10px); }
+    to   { opacity:1; transform: translateX(-50%) translateY(0); }
+  }
+</style>
+</head>
+<body>
+ 
+<div class="card">
+  <div class="header">
+    <h1>📅 Registro de Eventos</h1>
+    <p>Completa todos los campos obligatorios</p>
+  </div>
+ 
+  <div class="form-body">
+ 
+    <div class="sys-error" id="sysError"></div>
+ 
+    <!-- ── RESPONSABLE ── -->
+    <div class="section-title">Responsable</div>
+ 
+    <div class="field">
+      <label>Código <span class="req">*</span></label>
+      <input type="text" id="codigo" placeholder="Ej: 001" autocomplete="off" inputmode="text">
+      <span class="hint" id="hint-codigo"></span>
+    </div>
+ 
+    <div class="field">
+      <label>Nombre</label>
+      <input type="text" id="nombre" readonly placeholder="Se rellena automáticamente">
+    </div>
+ 
+    <!-- ── MATRÍCULAS ── -->
+    <div class="section-title">Matrículas Tractora / Remolque</div>
+ 
+    <div class="field">
+      <label>Matrícula <span class="req">*</span></label>
+      <select id="matricula">
+        <option value="">Cargando matrículas…</option>
+      </select>
+      <span class="hint" id="hint-matriculas"></span>
+    </div>
+ 
+    <div class="field">
+      <label>Remolque</label>
+      <select id="remolque">
+        <option value="">Cargando remolques…</option>
+      </select>
+      <span class="hint" id="hint-remolques"></span>
+    </div>
+ 
+    <!-- ── DATOS DEL EVENTO ── -->
+    <div class="section-title">Datos del Evento</div>
+ 
+    <div class="field">
+      <label>Tipo de Evento <span class="req">*</span></label>
+      <select id="tipoEvento" onchange="onTipoChange(this.value)">
+        <option value="">Cargando tipos…</option>
+      </select>
+      <span class="hint" id="hint-tipos"></span>
+    </div>
+ 
+    <div class="field campo-tacografo" id="campoTacografo">
+      <label>Lectura Tacógrafo (km) <span class="req">*</span></label>
+      <input type="number" id="tacografo" placeholder="Ej: 125430" min="0" step="1" inputmode="numeric">
+      <span class="hint" id="hint-tacografo"></span>
+    </div>
+ 
+    <div class="field">
+      <label>Fecha y Hora <span class="req">*</span></label>
+      <input type="datetime-local" id="fechaInicio">
+    </div>
+ 
+    <div class="field">
+      <label>Lugar / Ubicación <span class="req">*</span></label>
+      <input type="text" id="lugar" placeholder="Ej: Nave A, Parcela 3…">
+    </div>
+ 
+    <!-- ── DETALLES ── -->
+    <div class="section-title">Detalles</div>
+ 
+    <div class="field">
+      <label>Descripción</label>
+      <textarea id="descripcion" placeholder="Describe brevemente el evento… (opcional)"></textarea>
+    </div>
+ 
+    <div class="field">
+      <label>Observaciones</label>
+      <textarea id="observaciones" placeholder="Notas adicionales… (opcional)" style="min-height:70px"></textarea>
+    </div>
+ 
+    <!-- ── ARCHIVO ── -->
+    <div class="section-title">Archivo o Foto</div>
+ 
+    <div class="field">
+      <label>Adjuntar <span style="font-weight:400;color:#999">(opcional · máx. 4 MB)</span></label>
+      <div class="upload-area" id="uploadArea">
+        <input type="file" id="archivoInput" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+               onchange="onFileSelected(this)">
+        <div class="upload-icon">📎</div>
+        <div class="upload-text"><strong>Toca para seleccionar</strong> o arrastra aquí</div>
+      </div>
+      <div class="upload-preview" id="uploadPreview">
+        <span>📄</span>
+        <span id="uploadFileName"></span>
+        <span class="remove-file" onclick="quitarArchivo()">✕</span>
+      </div>
+      <div class="size-warn" id="sizeWarn">⚠ El archivo supera 4 MB.</div>
+    </div>
+ 
+    <!-- ── PROGRESO Y ENVÍO ── -->
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-label" id="progressLabel">Guardando…</div>
+      <div class="progress-bg"><div class="progress-bar" id="progressBar"></div></div>
+    </div>
+ 
+    <button class="btn-submit" id="btnEnviar" onclick="enviarFormulario()">
+      Enviar registro
+    </button>
+ 
+  </div>
+</div>
+ 
+<div class="toast" id="toast"></div>
+ 
+<script>
+  // ══════════════════════════════════════════════════════════
+  //  ⚠️  CAMBIA ESTA URL por la de tu Apps Script publicado
+  //  Formato: https://script.google.com/macros/s/XXXX/exec
+  // ══════════════════════════════════════════════════════════
+  var API_URL = "https://script.google.com/macros/s/AKfycbxxdt_lxK30HGCn2EGeF0srEnStyWlHu_PJG4DEptW-6HPsD9i9eq-ZuJR2GUdIfZNqhw/exec";
+ 
+  var MAX_BYTES         = 4 * 1024 * 1024;
+  var archivoSeleccionado = null;
+  var TIPOS_TACOGRAFO   = ["Salida de Base - TACOGRAFO", "Vuelta a Base - TACOGRAFO"];
+ 
+  // ── Llamada GET ───────────────────────────────────────────
+  function apiGet(params) {
+    var qs = Object.keys(params)
+      .map(function(k) { return k + "=" + encodeURIComponent(params[k]); })
+      .join("&");
+    return fetch(API_URL + "?" + qs, { redirect: "follow" })
+      .then(function(r) { return r.json(); });
+  }
+ 
+  // ── Cargar desplegable genérico ───────────────────────────
+  function cargarDesplegable(action, selectId, hintId, placeholder, opcional) {
+    var sel  = document.getElementById(selectId);
+    var hint = document.getElementById(hintId);
+ 
+    sel.innerHTML = '<option value="">Cargando…</option>';
+    sel.disabled  = true;
+ 
+    apiGet({ action: action })
+      .then(function(res) {
+        sel.disabled = false;
+        if (!res.ok || !res.lista) {
+          sel.innerHTML = '<option value="">Error al cargar</option>';
+          mostrarSysError(action + ": " + (res.error || "Error desconocido"));
+          return;
+        }
+        if (res.lista.length === 0) {
+          sel.innerHTML = '<option value="">Sin datos en la hoja</option>';
+          hint.textContent = "⚠ Añade datos en la hoja correspondiente";
+          hint.className   = "hint err";
+          return;
+        }
+        sel.innerHTML = '<option value="">' + placeholder + '</option>';
+        res.lista.forEach(function(item) {
+          var opt = document.createElement("option");
+          opt.value = item; opt.textContent = item;
+          sel.appendChild(opt);
+        });
+        hint.textContent = res.lista.length + " elemento(s) cargado(s)";
+        hint.className   = "hint info";
+        setTimeout(function() { hint.textContent = ""; hint.className = "hint"; }, 3000);
+      })
+      .catch(function(err) {
+        sel.disabled = false;
+        sel.innerHTML = '<option value="">Sin conexión</option>';
+        mostrarSysError("Error cargando " + action + ": " + err.message);
+      });
+  }
+ 
+  // ── Cargar los tres desplegables al arrancar ──────────────
+  window.addEventListener("load", function() {
+    cargarDesplegable("matriculas", "matricula",  "hint-matriculas", "— Selecciona matrícula —", false);
+    cargarDesplegable("remolques",  "remolque",   "hint-remolques",  "— Sin remolque —",          true);
+    cargarDesplegable("tipos",      "tipoEvento", "hint-tipos",      "— Selecciona tipo —",        false);
+  });
+ 
+  // ── Fecha y hora no puede ser futura ─────────────────────
+  function ahoraLocal() {
+    var now = new Date();
+    var pad = function(n) { return n.toString().padStart(2, "0"); };
+    return now.getFullYear() + "-" + pad(now.getMonth()+1) + "-" + pad(now.getDate()) +
+           "T" + pad(now.getHours()) + ":" + pad(now.getMinutes());
+  }
+  function actualizarMax() { document.getElementById("fechaInicio").max = ahoraLocal(); }
+  actualizarMax();
+  setInterval(actualizarMax, 60000);
+ 
+  // ── Autocomplete CÓDIGO → NOMBRE ─────────────────────────
+  var timeoutBusqueda;
+  document.getElementById("codigo").addEventListener("input", function() {
+    var valor  = this.value.trim();
+    var hint   = document.getElementById("hint-codigo");
+    var nombre = document.getElementById("nombre");
+    clearTimeout(timeoutBusqueda);
+ 
+    if (!valor) {
+      nombre.value = ""; hint.textContent = ""; hint.className = "hint"; return;
+    }
+    hint.textContent = "Buscando…"; hint.className = "hint info";
+ 
+    timeoutBusqueda = setTimeout(function() {
+      apiGet({ action: "trabajador", codigo: valor })
+        .then(function(res) {
+          if (!res.ok) {
+            hint.textContent = "⚠ " + res.error; hint.className = "hint err"; return;
+          }
+          if (res.nombre) {
+            nombre.value = res.nombre;
+            hint.textContent = "✓ " + res.nombre; hint.className = "hint ok";
+          } else {
+            nombre.value = ""; hint.textContent = "✗ Código no encontrado"; hint.className = "hint err";
+          }
+        })
+        .catch(function() { hint.textContent = "⚠ Sin conexión"; hint.className = "hint err"; });
+    }, 400);
+  });
+ 
+  // ── Tacógrafo condicional ─────────────────────────────────
+  function onTipoChange(valor) {
+    var campo = document.getElementById("campoTacografo");
+    var input = document.getElementById("tacografo");
+    if (TIPOS_TACOGRAFO.indexOf(valor) !== -1) {
+      campo.style.display = "flex";
+      input.focus();
+    } else {
+      campo.style.display = "none";
+      input.value = "";
+      document.getElementById("hint-tacografo").textContent = "";
+    }
+  }
+ 
+  document.getElementById("tacografo").addEventListener("input", function() {
+    var hint = document.getElementById("hint-tacografo");
+    var val  = parseInt(this.value);
+    if (this.value === "") { hint.textContent = ""; hint.className = "hint"; return; }
+    if (isNaN(val) || val < 0) {
+      hint.textContent = "✗ Número entero positivo"; hint.className = "hint err";
+    } else {
+      hint.textContent = "✓ " + val.toLocaleString("es-ES") + " km"; hint.className = "hint ok";
+    }
+  });
+ 
+  // ── Archivo ───────────────────────────────────────────────
+  function onFileSelected(input) {
+    if (!input.files || !input.files[0]) { archivoSeleccionado = null; return; }
+    var file = input.files[0];
+    if (file.size > MAX_BYTES) {
+      document.getElementById("sizeWarn").classList.add("show");
+      input.value = ""; archivoSeleccionado = null;
+      document.getElementById("uploadPreview").classList.remove("show"); return;
+    }
+    document.getElementById("sizeWarn").classList.remove("show");
+    archivoSeleccionado = file;
+    document.getElementById("uploadFileName").textContent =
+      file.name + " (" + (file.size / 1024).toFixed(0) + " KB)";
+    document.getElementById("uploadPreview").classList.add("show");
+    document.getElementById("uploadArea").classList.add("active");
+  }
+ 
+  function quitarArchivo() {
+    archivoSeleccionado = null;
+    document.getElementById("archivoInput").value = "";
+    document.getElementById("uploadPreview").classList.remove("show");
+    document.getElementById("uploadArea").classList.remove("active");
+    document.getElementById("sizeWarn").classList.remove("show");
+  }
+ 
+  function fileToBase64(file) {
+    return new Promise(function(resolve, reject) {
+      var r = new FileReader();
+      r.onload  = function(e) { resolve(e.target.result.split(",")[1]); };
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+ 
+  // ── Progreso ──────────────────────────────────────────────
+  function setProgress(pct, label) {
+    document.getElementById("progressBar").style.width = pct + "%";
+    document.getElementById("progressLabel").textContent = label;
+    document.getElementById("progressWrap").classList[pct > 0 ? "add" : "remove"]("show");
+  }
+ 
+  // ── Enviar formulario ─────────────────────────────────────
+  function enviarFormulario() {
+    var codigo        = document.getElementById("codigo").value.trim();
+    var nombre        = document.getElementById("nombre").value.trim();
+    var matricula     = document.getElementById("matricula").value;
+    var remolque      = document.getElementById("remolque").value;
+    var tipoEvento    = document.getElementById("tipoEvento").value;
+    var tacografo     = document.getElementById("tacografo").value.trim();
+    var fechaInicio   = document.getElementById("fechaInicio").value;
+    var lugar         = document.getElementById("lugar").value.trim();
+    var descripcion   = document.getElementById("descripcion").value.trim();
+    var observaciones = document.getElementById("observaciones").value.trim();
+    var esTacografo   = TIPOS_TACOGRAFO.indexOf(tipoEvento) !== -1;
+ 
+    if (!codigo)     return toast("Introduce el código", "error");
+    if (!nombre)     return toast("Código no válido o no encontrado", "error");
+    if (!matricula)  return toast("Selecciona una matrícula", "error");
+    if (!tipoEvento) return toast("Selecciona el tipo de evento", "error");
+    if (esTacografo && (!tacografo || parseInt(tacografo) < 0))
+                     return toast("Introduce la lectura del tacógrafo", "error");
+    if (!fechaInicio) return toast("Indica la fecha y hora", "error");
+    if (fechaInicio > ahoraLocal()) return toast("La fecha y hora no puede ser futura", "error");
+    if (!lugar)      return toast("Indica el lugar del evento", "error");
+ 
+    var btn = document.getElementById("btnEnviar");
+    btn.disabled = true;
+    setProgress(20, "Guardando datos…");
+ 
+    apiGet({
+      action: "guardar",
+      codigo: codigo, nombre: nombre,
+      matricula: matricula, remolque: remolque,
+      tipoEvento: tipoEvento, tacografo: esTacografo ? tacografo : "",
+      fechaInicio: fechaInicio, lugar: lugar,
+      descripcion: descripcion, observaciones: observaciones
+    })
+    .then(function(res) {
+      if (!res.ok) throw new Error(res.error || "Error al guardar");
+      var rowId = res.rowId;
+ 
+      if (!archivoSeleccionado) {
+        setProgress(100, "¡Completado!");
+        setTimeout(function() { finalizarEnvio(btn); }, 600);
+        return;
+      }
+ 
+      setProgress(60, "Subiendo archivo…");
+      return fileToBase64(archivoSeleccionado).then(function(b64) {
+        return fetch(
+          API_URL + "?rowId=" + rowId +
+            "&fileName=" + encodeURIComponent(archivoSeleccionado.name) +
+            "&mimeType=" + encodeURIComponent(archivoSeleccionado.type),
+          { method: "POST", headers: { "Content-Type": "text/plain" }, body: b64, redirect: "follow" }
+        );
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(fr) {
+        if (!fr.ok) toast("⚠ Registro guardado pero el archivo falló: " + fr.error, "error");
+        setProgress(100, "¡Completado!");
+        setTimeout(function() { finalizarEnvio(btn); }, 600);
+      });
+    })
+    .catch(function(err) {
+      btn.disabled = false;
+      setProgress(0, "");
+      toast("❌ " + err.message, "error");
+    });
+  }
+ 
+  function finalizarEnvio(btn) {
+    setProgress(0, "");
+    btn.disabled = false;
+    toast("✅ Evento registrado correctamente", "success");
+    limpiarFormulario();
+  }
+ 
+  // ── Limpiar ───────────────────────────────────────────────
+  function limpiarFormulario() {
+    ["codigo","nombre","tacografo","fechaInicio","lugar","descripcion","observaciones"]
+      .forEach(function(id) { document.getElementById(id).value = ""; });
+    document.getElementById("matricula").value  = "";
+    document.getElementById("remolque").value   = "";
+    document.getElementById("tipoEvento").value = "";
+    document.getElementById("campoTacografo").style.display = "none";
+    document.getElementById("hint-codigo").textContent = "";
+    document.getElementById("hint-codigo").className   = "hint";
+    quitarArchivo();
+  }
+ 
+  function mostrarSysError(msg) {
+    var el = document.getElementById("sysError");
+    el.textContent = "⚠ " + msg;
+    el.classList.add("show");
+  }
+ 
+  function toast(msg, tipo) {
+    var t = document.getElementById("toast");
+    t.textContent = msg; t.className = "toast show " + (tipo || "");
+    setTimeout(function() { t.className = "toast"; }, 4000);
+  }
+</script>
+</body>
+</html>
+ 
