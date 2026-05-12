@@ -8,237 +8,374 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'Segoe UI', system-ui, sans-serif;
-    background: linear-gradient(160deg, #e8f2fc, #f0f4ff);
-    min-height: 100vh;
-    display: flex; align-items: center;
-    justify-content: center; padding: 24px 16px;
+    background: #eef2f7; min-height: 100vh;
+    display: flex; align-items: flex-start;
+    justify-content: center; padding: 20px 16px 48px;
   }
-  .card {
-    background: #fff; border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(74,144,217,.15);
-    width: 100%; max-width: 380px; overflow: hidden; text-align: center;
+  .card { background:#fff; border-radius:18px; box-shadow:0 4px 28px rgba(0,0,0,.10);
+          width:100%; max-width:560px; overflow:hidden; }
+  .header { background:linear-gradient(135deg,#4A90D9,#357ABD); padding:28px 28px 22px; color:#fff; }
+  .header h1 { font-size:1.35rem; font-weight:700; }
+  .header p  { font-size:.84rem; opacity:.85; margin-top:4px; }
+  .form-body { padding:24px 28px 32px; display:flex; flex-direction:column; gap:18px; }
+  .sec { font-size:.68rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+         color:#4A90D9; border-bottom:1.5px solid #e4edf8; padding-bottom:5px; margin-bottom:-4px; }
+  .field { display:flex; flex-direction:column; gap:5px; }
+  label { font-size:.75rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:#555; }
+  .req { color:#e53935; margin-left:2px; }
+  input, select, textarea {
+    padding:11px 13px; border:1.5px solid #dde1e7; border-radius:10px;
+    font-size:.96rem; color:#222; font-family:inherit; background:#fafafa; width:100%;
+    transition:border .18s, box-shadow .18s;
   }
-  .header {
-    background: linear-gradient(135deg, #4A90D9, #357ABD);
-    padding: 36px 28px 28px; color: #fff;
+  input:focus, select:focus, textarea:focus {
+    outline:none; border-color:#4A90D9; box-shadow:0 0 0 3px rgba(74,144,217,.14); background:#fff;
   }
-  .icon { font-size: 3rem; margin-bottom: 10px; }
-  .header h1 { font-size: 1.35rem; font-weight: 700; }
-  .header p  { font-size: .86rem; opacity: .85; margin-top: 6px; line-height: 1.5; }
-
-  .body { padding: 28px 24px 32px; display: flex; flex-direction: column; gap: 14px; }
-
-  /* Spinner de carga */
-  .spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 0; }
-  .spinner {
-    width: 44px; height: 44px;
-    border: 4px solid #e4edf8;
-    border-top-color: #4A90D9;
-    border-radius: 50%;
-    animation: spin .8s linear infinite;
+  input[readonly] { background:#f0f6ff; color:#2563a8; font-weight:600; cursor:default; }
+  select { appearance:auto; -webkit-appearance:auto; }
+  textarea { resize:vertical; min-height:82px; line-height:1.5; }
+  .hint { font-size:.75rem; color:#aaa; min-height:15px; }
+  .hint.ok   { color:#1a7f45; }
+  .hint.err  { color:#e53935; }
+  .hint.info { color:#1565c0; }
+  .taco-field { display:none; flex-direction:column; gap:5px; }
+  .upload-zone {
+    border:2px dashed #b8cfe8; border-radius:12px; padding:22px 16px;
+    text-align:center; cursor:pointer; background:#f7faff; position:relative;
+    transition:border-color .2s, background .2s;
   }
-  .spinner-txt { font-size: .88rem; color: #4A90D9; font-weight: 600; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Botones */
-  .btn {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    padding: 15px 20px; border-radius: 13px; font-size: 1rem; font-weight: 700;
-    cursor: pointer; width: 100%; border: none; transition: opacity .2s, transform .1s;
-    text-decoration: none;
+  .upload-zone:hover, .upload-zone.drag { border-color:#4A90D9; background:#eef4ff; }
+  .upload-zone input[type="file"] {
+    position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; font-size:0;
   }
-  .btn:active { transform: scale(.97); }
-  .btn-chrome { background: linear-gradient(135deg, #4A90D9, #357ABD); color: #fff; box-shadow: 0 4px 14px rgba(74,144,217,.3); }
-  .btn-copy   { background: #f0f6ff; color: #4A90D9; border: 1.5px solid #cde0f5; }
-  .btn-chrome:hover { opacity: .91; }
-  .btn-copy:hover   { background: #e4f0fc; }
-
-  .divider { display: flex; align-items: center; gap: 8px; font-size: .76rem; color: #bbb; }
-  .divider::before, .divider::after { content:""; flex:1; height:1px; background:#eee; }
-
-  .nota {
-    background: #fffbf0; border: 1.5px solid #ffe09a;
-    border-radius: 10px; padding: 12px 14px;
-    font-size: .8rem; color: #7a5c00; line-height: 1.6; text-align: left;
+  .upload-icon { font-size:2rem; margin-bottom:6px; }
+  .upload-txt  { font-size:.88rem; color:#666; line-height:1.5; }
+  .upload-txt strong { color:#4A90D9; }
+  .upload-types { font-size:.74rem; color:#aaa; margin-top:3px; }
+  .file-list { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+  .file-item { display:flex; align-items:center; gap:10px; padding:9px 12px;
+               background:#f0f6ff; border-radius:9px; font-size:.84rem; }
+  .fi-icon { font-size:1.3rem; flex-shrink:0; }
+  .fi-name { flex:1; color:#2563a8; font-weight:500; word-break:break-all; }
+  .fi-size { font-size:.72rem; color:#888; white-space:nowrap; }
+  .fi-st   { font-size:.75rem; white-space:nowrap; }
+  .fi-st.pend { color:#888; } .fi-st.prog { color:#4A90D9; }
+  .fi-st.ok   { color:#1a7f45; } .fi-st.err  { color:#e53935; }
+  .fi-del { cursor:pointer; color:#e53935; font-weight:700; font-size:1rem; padding:0 4px; }
+  .btn { background:linear-gradient(135deg,#4A90D9,#357ABD); color:#fff; border:none;
+         border-radius:10px; padding:14px; font-size:1rem; font-weight:700;
+         cursor:pointer; width:100%; margin-top:4px; transition:opacity .2s, transform .1s; }
+  .btn:hover    { opacity:.91; } .btn:active { transform:scale(.98); }
+  .btn:disabled { opacity:.45; cursor:not-allowed; }
+  .prog { display:none; flex-direction:column; gap:5px; }
+  .prog.show { display:flex; }
+  .prog-lbl { font-size:.78rem; color:#4A90D9; font-weight:600; }
+  .prog-bg  { background:#e4edf8; border-radius:99px; height:7px; overflow:hidden; }
+  .prog-bar { background:linear-gradient(90deg,#4A90D9,#7bbcf7); height:100%;
+              border-radius:99px; width:0; transition:width .35s; }
+  .syserr { display:none; background:#fff3f3; border:1.5px solid #e53935;
+            border-radius:10px; padding:11px 14px; font-size:.84rem; color:#c62828; }
+  .syserr.show { display:block; }
+  .toast { display:none; position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+           background:#222; color:#fff; padding:11px 22px; border-radius:22px;
+           font-size:.9rem; box-shadow:0 4px 16px rgba(0,0,0,.22);
+           z-index:999; max-width:92vw; text-align:center; line-height:1.4; }
+  .toast.show    { display:block; animation:up .28s; }
+  .toast.success { background:#1a7f45; } .toast.error { background:#c62828; }
+  @keyframes up {
+    from { opacity:0; transform:translateX(-50%) translateY(10px); }
+    to   { opacity:1; transform:translateX(-50%) translateY(0); }
   }
-  .nota strong { color: #5a4000; }
-
-  /* URL copiada */
-  .copied {
-    font-size: .8rem; color: #1a7f45; font-weight: 600;
-    min-height: 18px; display: none;
-  }
-  .copied.show { display: block; }
-
-  /* Ocultar secciones según estado */
-  .step-auto   { display: flex; flex-direction: column; gap: 14px; }
-  .step-manual { display: none;  flex-direction: column; gap: 14px; }
 </style>
 </head>
 <body>
 <div class="card">
   <div class="header">
-    <div class="icon">📅</div>
-    <h1>Registro de Eventos</h1>
-    <p id="headerMsg">Abriendo el formulario en tu navegador…</p>
+    <h1>📅 Registro de Eventos</h1>
+    <p>Completa todos los campos obligatorios</p>
   </div>
+  <div class="form-body">
+    <div class="syserr" id="syserr"></div>
 
-  <div class="body">
-
-    <!-- PASO 1: intento automático -->
-    <div class="step-auto" id="stepAuto">
-      <div class="spinner-wrap">
-        <div class="spinner"></div>
-        <div class="spinner-txt" id="spinnerTxt">Redirigiendo a Chrome…</div>
-      </div>
+    <div class="sec">Responsable</div>
+    <div class="field">
+      <label>Código <span class="req">*</span></label>
+      <input type="text" id="codigo" placeholder="Ej: 001" autocomplete="off">
+      <span class="hint" id="h-codigo"></span>
+    </div>
+    <div class="field">
+      <label>Nombre</label>
+      <input type="text" id="nombre" readonly placeholder="Se rellena automáticamente">
     </div>
 
-    <!-- PASO 2: manual (si el automático falla) -->
-    <div class="step-manual" id="stepManual">
-      <button class="btn btn-chrome" onclick="abrirManual()">
-        🌐 Abrir formulario
-      </button>
-      <div class="divider">si no se abre</div>
-      <button class="btn btn-copy" onclick="copiar()">
-        📋 Copiar enlace
-      </button>
-      <div class="copied" id="copied">✓ Enlace copiado — pégalo en Chrome o Safari</div>
-      <div class="nota">
-        <strong>Pasos:</strong><br>
-        1. Pulsa <strong>Copiar enlace</strong><br>
-        2. Abre <strong>Chrome</strong> o <strong>Safari</strong><br>
-        3. Pega el enlace en la barra de direcciones y pulsa Ir
-      </div>
+    <div class="sec">Matrículas Tractora / Remolque</div>
+    <div class="field">
+      <label>Matrícula <span class="req">*</span></label>
+      <select id="matricula" disabled><option value="">Cargando…</option></select>
+      <span class="hint" id="h-matricula"></span>
+    </div>
+    <div class="field">
+      <label>Remolque</label>
+      <select id="remolque" disabled><option value="">Cargando…</option></select>
+      <span class="hint" id="h-remolque"></span>
     </div>
 
+    <div class="sec">Datos del Evento</div>
+    <div class="field">
+      <label>Tipo de Evento <span class="req">*</span></label>
+      <select id="tipoEvento" disabled onchange="onTipo(this.value)">
+        <option value="">Cargando…</option>
+      </select>
+      <span class="hint" id="h-tipo"></span>
+    </div>
+    <div class="taco-field" id="taco-field">
+      <label>Lectura Tacógrafo (km) <span class="req">*</span></label>
+      <input type="text" id="tacografo" placeholder="Ej: 125.430" inputmode="numeric" autocomplete="off">
+      <span class="hint" id="h-taco"></span>
+    </div>
+    <div class="field">
+      <label>Fecha y Hora <span class="req">*</span></label>
+      <input type="datetime-local" id="fechaInicio">
+    </div>
+    <div class="field">
+      <label>Lugar / Ubicación <span class="req">*</span></label>
+      <input type="text" id="lugar" placeholder="Ej: Nave A, Parcela 3…">
+    </div>
+
+    <div class="sec">Detalles</div>
+    <div class="field">
+      <label>Descripción / Observaciones</label>
+      <textarea id="descripcion" placeholder="Notas opcionales…"></textarea>
+    </div>
+
+    <div class="sec">Fotos y Archivos <span style="font-weight:400;color:#aaa;font-size:.65rem;letter-spacing:0">(opcional)</span></div>
+    <div class="field">
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" multiple
+               accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+               onchange="onFilesSelected(this.files)">
+        <div class="upload-icon">📎</div>
+        <div class="upload-txt"><strong>Toca para seleccionar</strong> o arrastra aquí</div>
+        <div class="upload-types">📷 Fotos · 📄 PDF · 📝 Word · 📊 Excel · máx. 10 MB c/u</div>
+      </div>
+      <div class="file-list" id="fileList"></div>
+    </div>
+
+    <div class="prog" id="prog">
+      <div class="prog-lbl" id="prog-lbl">Procesando…</div>
+      <div class="prog-bg"><div class="prog-bar" id="prog-bar"></div></div>
+    </div>
+    <button class="btn" id="btnEnviar" onclick="enviar()">Enviar registro</button>
   </div>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
-  // ══════════════════════════════════════════════════════════
-  //  ⚠️  PON AQUÍ LA URL DE TU APPS SCRIPT PUBLICADO
-  // ══════════════════════════════════════════════════════════
-  var FORM_URL = "https://script.google.com/macros/s/AKfycbwBDT1CE-NfBsIbCMyxpHn_1lWS5L9FgQM6S4iVXdDsCosHeml633_Jy3ncTs1SljtzoQ/exec";
+  var TIPOS_TACO  = ["Salida de Base - TACOGRAFO","Vuelta a Base - TACOGRAFO"];
+  var MAX_BYTES   = 10 * 1024 * 1024;
+  var archivos    = [];
+  var rowIdActual = 0;
+  var cola        = [];
 
-  var ua        = navigator.userAgent || "";
-  var esAndroid = /Android/i.test(ua);
-  var esIOS     = /iPhone|iPad|iPod/i.test(ua);
-  var intentado = false;
+  function cargarSel(fn, selId, hintId, placeholder) {
+    var sel = document.getElementById(selId), hint = document.getElementById(hintId);
+    sel.disabled = true;
+    google.script.run
+      .withSuccessHandler(function(res) {
+        sel.disabled = false;
+        if (!res.ok || !res.lista || !res.lista.length) {
+          sel.innerHTML = "<option value=''>⚠ Sin datos</option>";
+          hint.textContent = res.error || "Añade datos en la hoja"; hint.className = "hint err"; return;
+        }
+        var html = "<option value=''>" + placeholder + "</option>";
+        res.lista.forEach(function(v) { html += "<option>" + v + "</option>"; });
+        sel.innerHTML = html;
+        hint.textContent = res.lista.length + " elemento(s)"; hint.className = "hint info";
+        setTimeout(function() { hint.textContent = ""; hint.className = "hint"; }, 2500);
+      })
+      .withFailureHandler(function(err) {
+        sel.disabled = false; sel.innerHTML = "<option value=''>Error</option>";
+        mostrarSysErr(selId + ": " + err.message);
+      })[fn]();
+  }
 
-  // Al cargar la página: intento automático inmediato
   window.addEventListener("load", function() {
-    if (esAndroid) {
-      intentarAndroid();
-    } else if (esIOS) {
-      intentarIOS();
-    } else {
-      // Escritorio: redirigir directamente
-      window.location.href = FORM_URL;
-    }
+    cargarSel("getMatriculas",  "matricula",  "h-matricula", "— Selecciona matrícula —");
+    cargarSel("getRemolques",   "remolque",   "h-remolque",  "— Sin remolque —");
+    cargarSel("getTiposEvento", "tipoEvento", "h-tipo",      "— Selecciona tipo —");
+    actualizarMaxFecha(); setInterval(actualizarMaxFecha, 60000);
+    var zone = document.getElementById("uploadZone");
+    zone.addEventListener("dragover",  function(e) { e.preventDefault(); zone.classList.add("drag"); });
+    zone.addEventListener("dragleave", function()  { zone.classList.remove("drag"); });
+    zone.addEventListener("drop",      function(e) { e.preventDefault(); zone.classList.remove("drag"); onFilesSelected(e.dataTransfer.files); });
   });
 
-  // ── Android: intent URL para forzar Chrome ────────────────
-  function intentarAndroid() {
-    var txt = document.getElementById("spinnerTxt");
-    txt.textContent = "Abriendo en Chrome…";
+  function ahora() {
+    var d = new Date(), p = function(n) { return ("0"+n).slice(-2); };
+    return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes());
+  }
+  function actualizarMaxFecha() { document.getElementById("fechaInicio").max = ahora(); }
 
-    // Método 1: intent:// fuerza Chrome en Android
-    var host   = FORM_URL.replace(/^https?:\/\//, "");
-    var intent = "intent://" + host +
-      "#Intent;scheme=https;" +
-      "package=com.android.chrome;" +
-      "S.browser_fallback_url=" + encodeURIComponent(FORM_URL) + ";" +
-      "end";
+  var tBusq;
+  document.getElementById("codigo").addEventListener("input", function() {
+    var v = this.value.trim(), h = document.getElementById("h-codigo"), n = document.getElementById("nombre");
+    clearTimeout(tBusq);
+    if (!v) { n.value = ""; h.textContent = ""; h.className = "hint"; return; }
+    h.textContent = "Buscando…"; h.className = "hint info";
+    tBusq = setTimeout(function() {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res.ok) { h.textContent = "⚠ " + res.error; h.className = "hint err"; return; }
+          if (res.nombre) { n.value = res.nombre; h.textContent = "✓ " + res.nombre; h.className = "hint ok"; }
+          else { n.value = ""; h.textContent = "✗ Código no encontrado"; h.className = "hint err"; }
+        })
+        .withFailureHandler(function(err) { h.textContent = "⚠ " + err.message; h.className = "hint err"; })
+        .buscarNombre(v);
+    }, 400);
+  });
 
-    window.location.href = intent;
-
-    // Si Chrome no está → fallback al navegador por defecto tras 1.5s
-    setTimeout(function() {
-      if (!intentado) {
-        intentado = true;
-        txt.textContent = "Abriendo en tu navegador…";
-        window.open(FORM_URL, "_blank");
-
-        // Si sigue sin funcionar → mostrar manual tras 3s
-        setTimeout(mostrarManual, 3000);
-      }
-    }, 1500);
+  function onTipo(val) {
+    var c = document.getElementById("taco-field"), i = document.getElementById("tacografo");
+    if (TIPOS_TACO.indexOf(val) !== -1) { c.style.display = "flex"; i.focus(); }
+    else { c.style.display = "none"; i.value = ""; document.getElementById("h-taco").textContent = ""; }
   }
 
-  // ── iOS: Chrome scheme o Safari ───────────────────────────
-  function intentarIOS() {
-    var txt = document.getElementById("spinnerTxt");
-    txt.textContent = "Abriendo en Chrome…";
+  document.getElementById("tacografo").addEventListener("input", function() {
+    var n = this.value.replace(/\D/g,"");
+    this.value = n.replace(/\B(?=(\d{3})+(?!\d))/g,".");
+    var h = document.getElementById("h-taco");
+    h.textContent = n ? "✓ " + this.value + " km" : ""; h.className = n ? "hint ok" : "hint";
+  });
 
-    // Intentar abrir en Chrome iOS
-    var chromeUrl = FORM_URL.replace("https://", "googlechromes://")
-                            .replace("http://",  "googlechrome://");
-    window.location.href = chromeUrl;
-
-    // Fallback a Safari tras 1.5s si Chrome no está instalado
-    setTimeout(function() {
-      if (!intentado) {
-        intentado = true;
-        txt.textContent = "Abriendo en Safari…";
-        window.location.href = FORM_URL;
-
-        setTimeout(mostrarManual, 3000);
-      }
-    }, 1500);
+  function icono(f) {
+    if (f.type.startsWith("image/"))  return "🖼️";
+    if (f.type==="application/pdf")   return "📄";
+    if (f.type.includes("word"))      return "📝";
+    if (f.type.includes("excel")||f.type.includes("spreadsheet")) return "📊";
+    return "📎";
+  }
+  function tam(b) {
+    if (b<1024) return b+" B"; if (b<1048576) return (b/1024).toFixed(0)+" KB";
+    return (b/1048576).toFixed(1)+" MB";
   }
 
-  // ── Mostrar paso manual ───────────────────────────────────
-  function mostrarManual() {
-    document.getElementById("stepAuto").style.display  = "none";
-    document.getElementById("stepManual").style.display = "flex";
-    document.getElementById("headerMsg").textContent =
-      "Pulsa el botón para abrir el formulario";
-  }
-
-  // ── Botón manual ──────────────────────────────────────────
-  function abrirManual() {
-    intentado = true;
-    if (esAndroid) {
-      var host   = FORM_URL.replace(/^https?:\/\//, "");
-      var intent = "intent://" + host +
-        "#Intent;scheme=https;" +
-        "package=com.android.chrome;" +
-        "S.browser_fallback_url=" + encodeURIComponent(FORM_URL) + ";" +
-        "end";
-      window.location.href = intent;
-      setTimeout(function() { window.open(FORM_URL, "_blank"); }, 1500);
-    } else if (esIOS) {
-      var chromeUrl = FORM_URL.replace("https://", "googlechromes://")
-                              .replace("http://",  "googlechrome://");
-      window.location.href = chromeUrl;
-      setTimeout(function() { window.location.href = FORM_URL; }, 1500);
-    } else {
-      window.open(FORM_URL, "_blank");
+  function onFilesSelected(files) {
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      if (f.size > MAX_BYTES) { toast("⚠ " + f.name + " supera 10 MB","error"); continue; }
+      var dup = archivos.some(function(a) { return a.file.name===f.name && a.file.size===f.size; });
+      if (dup) continue;
+      var id = "f"+Date.now()+i;
+      archivos.push({ file:f, id:id, url:null, status:"pendiente" });
+      var div = document.createElement("div");
+      div.className = "file-item"; div.id = "fi-"+id;
+      div.innerHTML = '<span class="fi-icon">'+icono(f)+'</span>' +
+        '<span class="fi-name">'+f.name+'</span>' +
+        '<span class="fi-size">'+tam(f.size)+'</span>' +
+        '<span class="fi-st pend" id="fs-'+id+'">⏳</span>' +
+        '<span class="fi-del" onclick="quitarArchivo(\''+id+'\')">✕</span>';
+      document.getElementById("fileList").appendChild(div);
     }
+    document.getElementById("fileInput").value = "";
   }
 
-  // ── Copiar enlace ─────────────────────────────────────────
-  function copiar() {
-    var msg = document.getElementById("copied");
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(FORM_URL).then(function() {
-        msg.classList.add("show");
-        setTimeout(function() { msg.classList.remove("show"); }, 3000);
-      }).catch(fallbackCopiar);
-    } else {
-      fallbackCopiar();
+  function quitarArchivo(id) {
+    archivos = archivos.filter(function(a) { return a.id !== id; });
+    var el = document.getElementById("fi-"+id); if (el) el.parentNode.removeChild(el);
+  }
+
+  function setEst(id, txt, cls) {
+    var el = document.getElementById("fs-"+id);
+    if (el) { el.textContent = txt; el.className = "fi-st "+cls; }
+  }
+
+  function subirSiguiente() {
+    if (!cola.length) {
+      document.getElementById("btnEnviar").disabled = false;
+      setProgreso(0,"");
+      var ok  = archivos.filter(function(a){return a.status==="ok";}).length;
+      var err = archivos.filter(function(a){return a.status==="error";}).length;
+      var msg = "✅ Registro guardado";
+      if (ok)  msg += " ("+ok+" archivo(s) en Drive)";
+      if (err) msg += " · ⚠ "+err+" fallaron";
+      toast(msg,"success"); limpiar(); return;
     }
+    var a = cola.shift();
+    setEst(a.id,"⬆ Subiendo…","prog");
+    setProgreso(60,"Subiendo "+a.file.name+"…");
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var b64 = e.target.result.split(",")[1];
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res.ok) { a.url=res.url; a.status="ok"; setEst(a.id,"✓ Drive","ok"); }
+          else { a.status="error"; setEst(a.id,"✗ "+(res.error||"Error"),"err"); }
+          subirSiguiente();
+        })
+        .withFailureHandler(function(err) { a.status="error"; setEst(a.id,"✗ "+err.message,"err"); subirSiguiente(); })
+        .subirArchivo(b64, a.file.name, a.file.type||"application/octet-stream", rowIdActual);
+    };
+    reader.onerror = function() { a.status="error"; setEst(a.id,"✗ Error lectura","err"); subirSiguiente(); };
+    reader.readAsDataURL(a.file);
   }
 
-  function fallbackCopiar() {
-    var ta = document.createElement("textarea");
-    ta.value = FORM_URL; ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.focus(); ta.select();
-    try { document.execCommand("copy"); } catch(e) {}
-    document.body.removeChild(ta);
-    var msg = document.getElementById("copied");
-    msg.classList.add("show");
-    setTimeout(function() { msg.classList.remove("show"); }, 3000);
+  function setProgreso(pct,lbl) {
+    document.getElementById("prog-bar").style.width = pct+"%";
+    document.getElementById("prog-lbl").textContent = lbl;
+    document.getElementById("prog").classList[pct>0?"add":"remove"]("show");
+  }
+
+  function enviar() {
+    var codigo      = document.getElementById("codigo").value.trim();
+    var nombre      = document.getElementById("nombre").value.trim();
+    var matricula   = document.getElementById("matricula").value;
+    var remolque    = document.getElementById("remolque").value;
+    var tipoEvento  = document.getElementById("tipoEvento").value;
+    var tacografo   = document.getElementById("tacografo").value.replace(/\./g,"");
+    var fechaInicio = document.getElementById("fechaInicio").value;
+    var lugar       = document.getElementById("lugar").value.trim();
+    var descripcion = document.getElementById("descripcion").value.trim();
+    var esTaco      = TIPOS_TACO.indexOf(tipoEvento) !== -1;
+
+    if (!codigo)     return toast("Introduce el código","error");
+    if (!nombre)     return toast("Código no válido o no encontrado","error");
+    if (!matricula)  return toast("Selecciona una matrícula","error");
+    if (!tipoEvento) return toast("Selecciona el tipo de evento","error");
+    if (esTaco && (!tacografo||isNaN(parseInt(tacografo)))) return toast("Introduce la lectura del tacógrafo","error");
+    if (!fechaInicio) return toast("Indica la fecha y hora","error");
+    if (fechaInicio > ahora()) return toast("La fecha y hora no puede ser futura","error");
+    if (!lugar)      return toast("Indica el lugar del evento","error");
+
+    var btn = document.getElementById("btnEnviar");
+    btn.disabled = true; setProgreso(20,"Guardando registro…");
+
+    google.script.run
+      .withSuccessHandler(function(res) {
+        if (!res.ok) { btn.disabled=false; setProgreso(0,""); toast("❌ Error: "+(res.error||"desconocido"),"error"); return; }
+        rowIdActual = res.rowId;
+        var pendientes = archivos.filter(function(a){return a.status==="pendiente";});
+        if (!pendientes.length) { btn.disabled=false; setProgreso(0,""); toast("✅ Registro guardado","success"); limpiar(); return; }
+        cola = pendientes.slice(); setProgreso(40,"Subiendo archivos…"); subirSiguiente();
+      })
+      .withFailureHandler(function(err) { btn.disabled=false; setProgreso(0,""); toast("❌ "+err.message,"error"); })
+      .guardarRespuesta({ codigo:codigo, nombre:nombre, matricula:matricula, remolque:remolque,
+                          tipoEvento:tipoEvento, tacografo:esTaco?tacografo:"",
+                          fechaInicio:fechaInicio, lugar:lugar, descripcion:descripcion });
+  }
+
+  function limpiar() {
+    ["codigo","nombre","tacografo","fechaInicio","lugar","descripcion"].forEach(function(id){document.getElementById(id).value="";});
+    document.getElementById("matricula").value=""; document.getElementById("remolque").value=""; document.getElementById("tipoEvento").value="";
+    document.getElementById("taco-field").style.display="none";
+    document.getElementById("h-codigo").textContent=""; document.getElementById("h-codigo").className="hint";
+    document.getElementById("h-taco").textContent="";
+    archivos=[]; cola=[]; document.getElementById("fileList").innerHTML=""; document.getElementById("fileInput").value="";
+  }
+
+  function mostrarSysErr(msg) { var el=document.getElementById("syserr"); el.textContent="⚠ "+msg; el.classList.add("show"); }
+  function toast(msg,tipo) {
+    var t=document.getElementById("toast"); t.textContent=msg; t.className="toast show "+(tipo||"");
+    setTimeout(function(){t.className="toast";},4500);
   }
 </script>
 </body>
