@@ -1,23 +1,245 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso Registro de Transporte</title>
-    <style>
-        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
-        .card { text-align: center; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 80%; max-width: 400px; }
-        .btn { display: block; background-color: #007bff; color: white; text-decoration: none; padding: 15px 20px; border-radius: 10px; font-weight: bold; font-size: 1.2rem; margin-top: 20px; transition: background 0.3s; }
-        .btn:hover { background-color: #0056b3; }
-        h2 { color: #333; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Eventos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(160deg, #e8f2fc, #f0f4ff);
+    min-height: 100vh;
+    display: flex; align-items: center;
+    justify-content: center; padding: 24px 16px;
+  }
+  .card {
+    background: #fff; border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(74,144,217,.15);
+    width: 100%; max-width: 380px; overflow: hidden; text-align: center;
+  }
+  .header {
+    background: linear-gradient(135deg, #4A90D9, #357ABD);
+    padding: 36px 28px 28px; color: #fff;
+  }
+  .icon { font-size: 3rem; margin-bottom: 10px; }
+  .header h1 { font-size: 1.35rem; font-weight: 700; }
+  .header p  { font-size: .86rem; opacity: .85; margin-top: 6px; line-height: 1.5; }
+
+  .body { padding: 28px 24px 32px; display: flex; flex-direction: column; gap: 14px; }
+
+  /* Spinner de carga */
+  .spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 0; }
+  .spinner {
+    width: 44px; height: 44px;
+    border: 4px solid #e4edf8;
+    border-top-color: #4A90D9;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  .spinner-txt { font-size: .88rem; color: #4A90D9; font-weight: 600; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Botones */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 15px 20px; border-radius: 13px; font-size: 1rem; font-weight: 700;
+    cursor: pointer; width: 100%; border: none; transition: opacity .2s, transform .1s;
+    text-decoration: none;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-chrome { background: linear-gradient(135deg, #4A90D9, #357ABD); color: #fff; box-shadow: 0 4px 14px rgba(74,144,217,.3); }
+  .btn-copy   { background: #f0f6ff; color: #4A90D9; border: 1.5px solid #cde0f5; }
+  .btn-chrome:hover { opacity: .91; }
+  .btn-copy:hover   { background: #e4f0fc; }
+
+  .divider { display: flex; align-items: center; gap: 8px; font-size: .76rem; color: #bbb; }
+  .divider::before, .divider::after { content:""; flex:1; height:1px; background:#eee; }
+
+  .nota {
+    background: #fffbf0; border: 1.5px solid #ffe09a;
+    border-radius: 10px; padding: 12px 14px;
+    font-size: .8rem; color: #7a5c00; line-height: 1.6; text-align: left;
+  }
+  .nota strong { color: #5a4000; }
+
+  /* URL copiada */
+  .copied {
+    font-size: .8rem; color: #1a7f45; font-weight: 600;
+    min-height: 18px; display: none;
+  }
+  .copied.show { display: block; }
+
+  /* Ocultar secciones según estado */
+  .step-auto   { display: flex; flex-direction: column; gap: 14px; }
+  .step-manual { display: none;  flex-direction: column; gap: 14px; }
+</style>
 </head>
 <body>
-    <div class="card">
-        <h2>🚛 Registro de Eventos</h2>
-        <p>Haz clic en el botón para abrir el formulario de registro.</p>
-        <!-- SUSTITUYE LA URL DE ABAJO POR TU URL DE GOOGLE APPS SCRIPT -->
-        <a href="https://script.google.com/macros/s/AKfycbzj8duYkt4SLRx6M1Jln_8ZxiXx4CTCOO5-qBBCaUJxfI3oaMrPC3OlM61Yp0wVd3F89w/exec" class="btn">ABRIR FORMULARIO</a>
+<div class="card">
+  <div class="header">
+    <div class="icon">📅</div>
+    <h1>Registro de Eventos</h1>
+    <p id="headerMsg">Abriendo el formulario en tu navegador…</p>
+  </div>
+
+  <div class="body">
+
+    <!-- PASO 1: intento automático -->
+    <div class="step-auto" id="stepAuto">
+      <div class="spinner-wrap">
+        <div class="spinner"></div>
+        <div class="spinner-txt" id="spinnerTxt">Redirigiendo a Chrome…</div>
+      </div>
     </div>
+
+    <!-- PASO 2: manual (si el automático falla) -->
+    <div class="step-manual" id="stepManual">
+      <button class="btn btn-chrome" onclick="abrirManual()">
+        🌐 Abrir formulario
+      </button>
+      <div class="divider">si no se abre</div>
+      <button class="btn btn-copy" onclick="copiar()">
+        📋 Copiar enlace
+      </button>
+      <div class="copied" id="copied">✓ Enlace copiado — pégalo en Chrome o Safari</div>
+      <div class="nota">
+        <strong>Pasos:</strong><br>
+        1. Pulsa <strong>Copiar enlace</strong><br>
+        2. Abre <strong>Chrome</strong> o <strong>Safari</strong><br>
+        3. Pega el enlace en la barra de direcciones y pulsa Ir
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ══════════════════════════════════════════════════════════
+  //  ⚠️  PON AQUÍ LA URL DE TU APPS SCRIPT PUBLICADO
+  // ══════════════════════════════════════════════════════════
+  var FORM_URL = "https://script.google.com/macros/s/AKfycbwBDT1CE-NfBsIbCMyxpHn_1lWS5L9FgQM6S4iVXdDsCosHeml633_Jy3ncTs1SljtzoQ/exec";
+
+  var ua        = navigator.userAgent || "";
+  var esAndroid = /Android/i.test(ua);
+  var esIOS     = /iPhone|iPad|iPod/i.test(ua);
+  var intentado = false;
+
+  // Al cargar la página: intento automático inmediato
+  window.addEventListener("load", function() {
+    if (esAndroid) {
+      intentarAndroid();
+    } else if (esIOS) {
+      intentarIOS();
+    } else {
+      // Escritorio: redirigir directamente
+      window.location.href = FORM_URL;
+    }
+  });
+
+  // ── Android: intent URL para forzar Chrome ────────────────
+  function intentarAndroid() {
+    var txt = document.getElementById("spinnerTxt");
+    txt.textContent = "Abriendo en Chrome…";
+
+    // Método 1: intent:// fuerza Chrome en Android
+    var host   = FORM_URL.replace(/^https?:\/\//, "");
+    var intent = "intent://" + host +
+      "#Intent;scheme=https;" +
+      "package=com.android.chrome;" +
+      "S.browser_fallback_url=" + encodeURIComponent(FORM_URL) + ";" +
+      "end";
+
+    window.location.href = intent;
+
+    // Si Chrome no está → fallback al navegador por defecto tras 1.5s
+    setTimeout(function() {
+      if (!intentado) {
+        intentado = true;
+        txt.textContent = "Abriendo en tu navegador…";
+        window.open(FORM_URL, "_blank");
+
+        // Si sigue sin funcionar → mostrar manual tras 3s
+        setTimeout(mostrarManual, 3000);
+      }
+    }, 1500);
+  }
+
+  // ── iOS: Chrome scheme o Safari ───────────────────────────
+  function intentarIOS() {
+    var txt = document.getElementById("spinnerTxt");
+    txt.textContent = "Abriendo en Chrome…";
+
+    // Intentar abrir en Chrome iOS
+    var chromeUrl = FORM_URL.replace("https://", "googlechromes://")
+                            .replace("http://",  "googlechrome://");
+    window.location.href = chromeUrl;
+
+    // Fallback a Safari tras 1.5s si Chrome no está instalado
+    setTimeout(function() {
+      if (!intentado) {
+        intentado = true;
+        txt.textContent = "Abriendo en Safari…";
+        window.location.href = FORM_URL;
+
+        setTimeout(mostrarManual, 3000);
+      }
+    }, 1500);
+  }
+
+  // ── Mostrar paso manual ───────────────────────────────────
+  function mostrarManual() {
+    document.getElementById("stepAuto").style.display  = "none";
+    document.getElementById("stepManual").style.display = "flex";
+    document.getElementById("headerMsg").textContent =
+      "Pulsa el botón para abrir el formulario";
+  }
+
+  // ── Botón manual ──────────────────────────────────────────
+  function abrirManual() {
+    intentado = true;
+    if (esAndroid) {
+      var host   = FORM_URL.replace(/^https?:\/\//, "");
+      var intent = "intent://" + host +
+        "#Intent;scheme=https;" +
+        "package=com.android.chrome;" +
+        "S.browser_fallback_url=" + encodeURIComponent(FORM_URL) + ";" +
+        "end";
+      window.location.href = intent;
+      setTimeout(function() { window.open(FORM_URL, "_blank"); }, 1500);
+    } else if (esIOS) {
+      var chromeUrl = FORM_URL.replace("https://", "googlechromes://")
+                              .replace("http://",  "googlechrome://");
+      window.location.href = chromeUrl;
+      setTimeout(function() { window.location.href = FORM_URL; }, 1500);
+    } else {
+      window.open(FORM_URL, "_blank");
+    }
+  }
+
+  // ── Copiar enlace ─────────────────────────────────────────
+  function copiar() {
+    var msg = document.getElementById("copied");
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(FORM_URL).then(function() {
+        msg.classList.add("show");
+        setTimeout(function() { msg.classList.remove("show"); }, 3000);
+      }).catch(fallbackCopiar);
+    } else {
+      fallbackCopiar();
+    }
+  }
+
+  function fallbackCopiar() {
+    var ta = document.createElement("textarea");
+    ta.value = FORM_URL; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand("copy"); } catch(e) {}
+    document.body.removeChild(ta);
+    var msg = document.getElementById("copied");
+    msg.classList.add("show");
+    setTimeout(function() { msg.classList.remove("show"); }, 3000);
+  }
+</script>
 </body>
 </html>
