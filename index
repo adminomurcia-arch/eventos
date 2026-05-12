@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Eventos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(160deg, #e8f2fc, #f0f4ff);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(74,144,217,.15);
+    width: 100%;
+    max-width: 400px;
+    overflow: hidden;
+    text-align: center;
+  }
+  .header {
+    background: linear-gradient(135deg, #4A90D9, #357ABD);
+    padding: 36px 28px 28px;
+    color: #fff;
+  }
+  .header .icon { font-size: 3rem; margin-bottom: 10px; }
+  .header h1   { font-size: 1.4rem; font-weight: 700; }
+  .header p    { font-size: .88rem; opacity: .85; margin-top: 6px; }
+
+  .body { padding: 32px 28px 36px; display: flex; flex-direction: column; gap: 16px; }
+
+  .btn-main {
+    background: linear-gradient(135deg, #25D366, #1da851);
+    color: #fff; border: none; border-radius: 14px;
+    padding: 18px 24px; font-size: 1.08rem; font-weight: 700;
+    cursor: pointer; width: 100%; display: flex;
+    align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 4px 16px rgba(37,211,102,.3);
+    transition: opacity .2s, transform .1s;
+    text-decoration: none;
+  }
+  .btn-main:hover  { opacity: .92; }
+  .btn-main:active { transform: scale(.97); }
+
+  .divider {
+    display: flex; align-items: center; gap: 10px;
+    font-size: .78rem; color: #bbb;
+  }
+  .divider::before, .divider::after {
+    content: ""; flex: 1; height: 1px; background: #eee;
+  }
+
+  .btn-alt {
+    background: #f5f7fa; color: #4A90D9;
+    border: 1.5px solid #d0e2f5; border-radius: 12px;
+    padding: 14px 20px; font-size: .95rem; font-weight: 600;
+    cursor: pointer; width: 100%; display: flex;
+    align-items: center; justify-content: center; gap: 8px;
+    transition: background .2s;
+    text-decoration: none;
+  }
+  .btn-alt:hover { background: #eaf2fc; }
+
+  .nota {
+    font-size: .78rem; color: #aaa; line-height: 1.6;
+    background: #f9f9f9; border-radius: 10px; padding: 12px 14px;
+    text-align: left;
+  }
+  .nota strong { color: #555; }
+
+  /* Estado del intento */
+  .status {
+    font-size: .82rem; color: #4A90D9;
+    min-height: 20px; display: none;
+  }
+  .status.show { display: block; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="icon">📅</div>
+    <h1>Registro de Eventos</h1>
+    <p>Pulsa el botón para abrir el formulario</p>
+  </div>
+
+  <div class="body">
+
+    <!-- Botón principal: intenta abrir en Chrome -->
+    <button class="btn-main" onclick="abrirEnChrome()">
+      <span>🌐</span> Abrir formulario
+    </button>
+
+    <span class="status" id="status"></span>
+
+    <div class="divider">o si no funciona</div>
+
+    <!-- Botón alternativo: copia el enlace -->
+    <button class="btn-alt" onclick="copiarEnlace()">
+      <span>📋</span> Copiar enlace para pegar en Chrome
+    </button>
+
+    <div class="nota">
+      <strong>¿No se abre?</strong><br>
+      1. Pulsa <strong>"Copiar enlace"</strong><br>
+      2. Abre <strong>Chrome</strong> o <strong>Safari</strong><br>
+      3. Pega el enlace en la barra de direcciones
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ══════════════════════════════════════════════════════════
+  //  ⚠️  CAMBIA ESTA URL por la de tu Apps Script publicado
+  //  Formato: https://script.google.com/macros/s/XXXX/exec
+  // ══════════════════════════════════════════════════════════
+  var FORM_URL = "https://script.google.com/macros/s/AKfycbw63EvWJP7FD4QRuun7EWGmNn-DHupmX6pr6UNrWT5W1PbztNAPunAVk5fFrQvoQaK-EA/exec";
+
+  function mostrarStatus(msg) {
+    var el = document.getElementById("status");
+    el.textContent = msg; el.classList.add("show");
+    setTimeout(function() { el.classList.remove("show"); }, 3000);
+  }
+
+  function abrirEnChrome() {
+    var ua = navigator.userAgent || "";
+    var esAndroid = /Android/i.test(ua);
+    var esIOS     = /iPhone|iPad|iPod/i.test(ua);
+
+    if (esAndroid) {
+      // Intent URL: fuerza apertura en Chrome en Android
+      var intent = "intent://" +
+        FORM_URL.replace(/^https?:\/\//, "") +
+        "#Intent;scheme=https;package=com.android.chrome;end";
+
+      // Intentamos abrir en Chrome vía intent
+      window.location.href = intent;
+
+      // Si Chrome no está instalado, usamos el enlace normal tras 1s
+      setTimeout(function() {
+        window.open(FORM_URL, "_blank");
+        mostrarStatus("Abriendo en el navegador…");
+      }, 1000);
+
+    } else if (esIOS) {
+      // En iOS usamos googlechromes:// para Chrome o simplemente abrimos
+      var chromeUrl = FORM_URL.replace("https://", "googlechromes://")
+                              .replace("http://", "googlechrome://");
+      window.location.href = chromeUrl;
+
+      // Fallback a Safari si Chrome no está instalado
+      setTimeout(function() {
+        window.open(FORM_URL, "_blank");
+        mostrarStatus("Abriendo en Safari…");
+      }, 1000);
+
+    } else {
+      // Escritorio: abrir directamente
+      window.open(FORM_URL, "_blank");
+    }
+  }
+
+  function copiarEnlace() {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(FORM_URL).then(function() {
+        mostrarStatus("✓ Enlace copiado — pégalo en Chrome o Safari");
+      }).catch(function() {
+        fallbackCopiar();
+      });
+    } else {
+      fallbackCopiar();
+    }
+  }
+
+  function fallbackCopiar() {
+    var ta = document.createElement("textarea");
+    ta.value = FORM_URL;
+    ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try {
+      document.execCommand("copy");
+      mostrarStatus("✓ Enlace copiado — pégalo en Chrome o Safari");
+    } catch(e) {
+      mostrarStatus("Copia este enlace: " + FORM_URL);
+    }
+    document.body.removeChild(ta);
+  }
+</script>
+</body>
+</html>
